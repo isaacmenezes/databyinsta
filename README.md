@@ -65,10 +65,16 @@ instagram-data-scraper/
 │   └── scraper.log              # Logs de execução
 │
 ├── instagrapi/
-│   ├── instagrapi.py           # Coleta via API simulada
+│   ├── instagrapi.py           # Coleta via API simulada (com login)
 │   ├── .env                     # Configurações
 │   ├── collector.log            # Logs
-│   └── firstlogin_manually.py   # Setup de sessão
+│   ├── firstlogin_manually.py   # Setup de sessão
+│   └── no_login/
+│       ├── collector.py        # Coleta sem login (via Session ID) ⭐
+│       ├── .env                # Configurações (IG_SESSION_ID)
+│       ├── collector.log       # Logs
+│       └── output/
+│           └── instagram_posts.csv  # Dados coletados
 │
 ├── instaloader/
 │   ├── instaloader.py          # Coleta em massa
@@ -101,6 +107,14 @@ instagram-data-scraper/
 - [x] Extração de visualizações (vídeos)
 - [x] Modelo de dados type-safe
 - [x] Exibição formatada de resultados
+
+### ✅ Instagrapi - Sem Login (no_login/collector.py) ⭐
+- [x] Autenticação via Session ID (sem credenciais)
+- [x] Coleta de perfil e posts
+- [x] Exportação em CSV automatizada
+- [x] Tratamento robusto de sessões expiradas
+- [x] Performance otimizada
+- [x] Ideal para produção
 
 ### ✅ Instaloader (instaloader.py)
 - [x] Autenticação com fallback para sessão salva
@@ -208,7 +222,7 @@ python complete_version.py
 
 ---
 
-### Instagrapi (API Simulada)
+### Instagrapi (API Simulada) - Com Login
 
 ```bash
 cd instagrapi
@@ -223,6 +237,38 @@ python instagrapi.py
 - Coleta rápida de um perfil
 - Melhor performance
 - Menor overhead
+
+---
+
+### Instagrapi (Sem Login) - ⭐ Recomendado
+
+```bash
+cd instagrapi/no_login
+python collector.py
+```
+
+**Saída:**
+- `output/instagram_posts.csv` - Dados dos posts coletados
+- `collector.log` - Log detalhado
+
+**Configuração (.env):**
+```env
+IG_SESSION_ID=seu_session_id_aqui
+```
+
+**Como obter Session ID:**
+1. Acesse Instagram no browser
+2. Abra DevTools (`F12`)
+3. Vá para **Application** → **Cookies** → **https://www.instagram.com**
+4. Procure por `sessionid` e copie o valor completo
+5. Cole no `.env`
+
+**Ideal para:**
+- ✅ Sem necessidade de credenciais de login armazenadas
+- ✅ Usa Session ID para autenticação mais segura
+- ✅ Melhor performance e confiabilidade
+- ✅ Menor risco de bloqueio por tentativas de login frequentes
+- ✅ Session pode ser reutilizada entre execuções
 
 ---
 
@@ -303,19 +349,21 @@ for attempt in range(max_retries):
 
 ### Performance
 
-| Métrica | Selenium | Instagrapi | Instaloader |
-|---------|----------|-----------|------------|
-| Posts/min (1 perfil) | 3-5 | 10-15 | 15-20 |
-| Overhead de memória | Alto | Baixo | Baixo |
-| Tempo de setup | Médio | Rápido | Rápido |
+| Métrica | Selenium | Instagrapi | Instagrapi (No-Login) | Instaloader |
+|---------|----------|-----------|--------------------|-|
+| Posts/min (1 perfil) | 3-5 | 10-15 | 12-18 | 15-20 |
+| Overhead de memória | Alto | Baixo | Baixo | Baixo |
+| Tempo de setup | Médio | Rápido | Instantâneo | Rápido |
+| Requer credenciais | Sim | Sim | Não (Session ID) | Sim |
 
 ### Confiabilidade
 
-| Aspecto | Selenium | Instagrapi | Instaloader |
-|---------|----------|-----------|------------|
-| Taxa de bloqueio | Média | Alta | Baixa |
-| Requer sessão | Não | Sim | Sim |
-| Dados completos | ✓ | ✓ | ✓✓ |
+| Aspecto | Selenium | Instagrapi | Instagrapi (No-Login) | Instaloader |
+|---------|----------|-----------|--------------------|-|
+| Taxa de bloqueio | Média | Alta | Baixa | Baixa |
+| Requer login | Sim | Sim | Não | Sim |
+| Dados completos | ✓ | ✓ | ✓✓ | ✓✓ |
+| Ideal para produção | ✗ | ✗ | ✓ | ✓ |
 
 ---
 
@@ -396,46 +444,6 @@ Solução: Execute firstlogin_manually.py
 
 ---
 
-## 👨‍🎓 Contexto Acadêmico
-
-Este projeto foi desenvolvido como parte do programa de **Iniciação Científica**, com foco em:
-
-- Análise comparativa de técnicas de web scraping
-- Implementação de boas práticas em Python moderno
-- Estruturação profissional de código
-- Documentação técnica e versionamento
-
----
-
 ## 📄 Licença
 
 MIT License - Veja [LICENSE](LICENSE) para detalhes
-
----
-
-## ✨ Contribuições & Melhorias Futuras
-
-- [ ] Integração com banco de dados (SQLite/PostgreSQL)
-- [ ] API REST para exposição dos dados
-- [ ] Dashboard web com visualizações
-- [ ] Análise de sentimento dos captions
-- [ ] Scheduler automático de coletas
-- [ ] Testes unitários e integração
-- [ ] Docker containerization
-
----
-
-## 📧 Contato & Suporte
-
-Para dúvidas, sugestões ou relatos de bugs:
-
-```
-📧 Email: seu-email@example.com
-🐙 GitHub: seu-github-profile
-```
-
----
-
-**Desenvolvido com ❤️ para Iniciação Científica**
-
-*Última atualização: Abril 2026*

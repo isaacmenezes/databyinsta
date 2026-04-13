@@ -13,6 +13,8 @@ bulk_scraper.log
 *.csv
 dados_instagram.csv
 dados_brutos.csv
+output/
+no_login/output/
 
 # Python
 __pycache__/
