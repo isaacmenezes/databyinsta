@@ -2,8 +2,6 @@
 
 ![Status](https://img.shields.io/badge/Status-Em_Desenvolvimento-yellow?style=for-the-badge)
 ![Python](https://img.shields.io/badge/Python-3.9+-3776AB?style=for-the-badge&logo=python&logoColor=white)
-![Selenium](https://img.shields.io/badge/Selenium-43B02A?style=for-the-badge&logo=selenium&logoColor=white)
-![License](https://img.shields.io/badge/Licença-MIT-green?style=for-the-badge)
 
 ## Sobre o Projeto
 
@@ -202,7 +200,7 @@ MAX_RETRIES=3
 
 ---
 
-## 💻 Como Usar
+## Como Usar
 
 ### Selenium (Automação Browser)
 
@@ -240,7 +238,7 @@ python instagrapi.py
 
 ---
 
-### Instagrapi (Sem Login) - ⭐ Recomendado
+### Instagrapi (Sem Login) - Recomendado
 
 ```bash
 cd instagrapi/no_login
@@ -264,11 +262,11 @@ IG_SESSION_ID=seu_session_id_aqui
 5. Cole no `.env`
 
 **Ideal para:**
-- ✅ Sem necessidade de credenciais de login armazenadas
-- ✅ Usa Session ID para autenticação mais segura
-- ✅ Melhor performance e confiabilidade
-- ✅ Menor risco de bloqueio por tentativas de login frequentes
-- ✅ Session pode ser reutilizada entre execuções
+- Sem necessidade de credenciais de login armazenadas
+- Usa Session ID para autenticação mais segura
+- Melhor performance e confiabilidade
+- Menor risco de bloqueio por tentativas de login frequentes
+- Session pode ser reutilizada entre execuções
 
 ---
 
@@ -290,7 +288,7 @@ python instaloader.py
 
 ---
 
-## 📊 Arquitetura e Design
+## Arquitetura e Design
 
 ### Padrões Implementados
 
@@ -345,7 +343,7 @@ for attempt in range(max_retries):
 
 ---
 
-## 📈 Comparação de Abordagens
+## Comparação de Abordagens
 
 ### Performance
 
@@ -369,7 +367,7 @@ for attempt in range(max_retries):
 
 ## 🔐 Segurança
 
-✅ **Boas Práticas Implementadas:**
+**Boas Práticas Implementadas:**
 - Credenciais em `.env` (nunca no código)
 - `.gitignore` para proteger dados sensíveis
 - Validação de credenciais antes de uso
@@ -384,7 +382,7 @@ for attempt in range(max_retries):
 
 ---
 
-## 📝 Output CSV
+## Output CSV
 
 ### Formato dos Dados
 
@@ -403,7 +401,7 @@ neymarjr,200000,"[{...}, {...}]"
 
 ---
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### "Login failed"
 ```
@@ -435,7 +433,7 @@ Solução: Execute firstlogin_manually.py
 
 ---
 
-## 📚 Referências & Documentação
+## Referências & Documentação
 
 - [Selenium Docs](https://selenium-python.readthedocs.io/)
 - [Instagrapi GitHub](https://github.com/adw0rd/instagrapi)
@@ -444,6 +442,6 @@ Solução: Execute firstlogin_manually.py
 
 ---
 
-## 📄 Licença
+## Licença
 
 MIT License - Veja [LICENSE](LICENSE) para detalhes
