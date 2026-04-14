@@ -69,10 +69,18 @@ instagram-data-scraper/
 │   ├── firstlogin_manually.py   # Setup de sessão
 │   └── no_login/
 │       ├── collector.py        # Coleta sem login (via Session ID) ⭐
+│       ├── analysis.py         # Análise de engajamento 📊
 │       ├── .env                # Configurações (IG_SESSION_ID)
 │       ├── collector.log       # Logs
 │       └── output/
-│           └── instagram_posts.csv  # Dados coletados
+│           ├── posts.csv                           # Dados coletados
+│           └── analysis/                           # Pasta de análises
+│               ├── relatorio.txt                   # Relatório textual
+│               ├── 1_engajamento_por_perfil.png
+│               ├── 2_distribuicao_engajamento.png
+│               ├── 3_hashtags_vs_engajamento.png
+│               ├── 4_legenda_vs_engajamento.png
+│               └── 5_tipo_post_vs_engajamento.png
 │
 ├── instaloader/
 │   ├── instaloader.py          # Coleta em massa
@@ -82,8 +90,9 @@ instagram-data-scraper/
 │   └── loadsession_manually.py
 │
 ├── .gitignore
-├── README.md                    # Este arquivo
-└── dados_instagram.csv          # Saída (ignorado no git)
+├── requirements.txt            # Dependências
+├── README.md                   # Este arquivo
+└── dados_instagram.csv         # Saída (ignorado no git)
 ```
 
 ---
@@ -113,6 +122,15 @@ instagram-data-scraper/
 - [x] Tratamento robusto de sessões expiradas
 - [x] Performance otimizada
 - [x] Ideal para produção
+
+### ✅ Análise de Engajamento (no_login/analysis.py) 📊
+- [x] Carregamento e processamento de dados CSV
+- [x] Cálculo de métricas de engajamento
+- [x] Visualizações avançadas com Matplotlib/Seaborn
+- [x] Análise multidimensional (hashtags, legenda, tipo de post)
+- [x] Relatório textual detalhado por perfil
+- [x] Comparação entre perfis e correlações
+- [x] Exportação de gráficos em alta qualidade (150 DPI)
 
 ### ✅ Instaloader (instaloader.py)
 - [x] Autenticação com fallback para sessão salva
@@ -161,6 +179,8 @@ instaloader>=4.0.0
 pandas>=1.5.0
 python-dotenv>=1.0.0
 webdriver-manager>=3.8.0
+matplotlib>=3.5.0
+seaborn>=0.12.0
 ```
 
 ### 3. Configurar Variáveis de Ambiente
@@ -285,6 +305,115 @@ python instaloader.py
 - Coleta em massa
 - Múltiplos perfis simultaneamente
 - Melhor confiabilidade
+
+---
+
+## 📊 Análise de Dados
+
+Após coletar os dados, o módulo de análise gera visualizações e relatórios detalhados sobre engajamento, hashtags, tipos de post e outros métricas.
+
+### Rodando a Análise
+
+```bash
+cd instagrapi/no_login
+python analysis.py
+```
+
+**Pré-requisito:**
+- Arquivo `output/posts.csv` gerado pela coleta
+
+**Saída:**
+- `output/analysis/relatorio.txt` - Relatório textual completo
+- `output/analysis/1_engajamento_por_perfil.png` - Gráficos de engajamento
+- `output/analysis/2_distribuicao_engajamento.png` - Histograma de distribuição
+- `output/analysis/3_hashtags_vs_engajamento.png` - Influência de hashtags
+- `output/analysis/4_legenda_vs_engajamento.png` - Impacto do tamanho da legenda
+- `output/analysis/5_tipo_post_vs_engajamento.png` - Engajamento por tipo de post
+
+### Métricas Analisadas
+
+| Métrica | Descrição |
+|---------|-----------|
+| **Engajamento Absoluto** | Likes + Comentários por post |
+| **Taxa de Engajamento (%)** | (Engajamento / Seguidores) × 100 |
+| **Hashtags** | Número de hashtags por post |
+| **Tamanho da Legenda** | Quantidade de caracteres na descrição |
+| **Tipo de Post** | Imagem, Carrossel ou Reel |
+
+### Visualizações Geradas
+
+1. **Média de Engajamento por Perfil**
+   - Gráficos comparativos de engajamento médio
+   - Taxa de engajamento média por perfil
+
+2. **Distribuição de Engajamento**
+   - Histogramas com distribuição normal
+   - Comparação entre perfis
+   - Visualização de outliers
+
+3. **Hashtags vs Engajamento**
+   - Scatter plot: número de hashtags × engajamento
+   - Linha: influência de hashtags na taxa de engajamento
+
+4. **Legenda vs Engajamento**
+   - Análise do impacto do tamanho da legenda
+   - Tamanho da legenda em faixas vs taxa média
+
+5. **Tipo de Post vs Engajamento**
+   - Box plot de distribuição por tipo
+   - Taxa de engajamento média por tipo de post
+
+### Exemplo de Saída - Relatório
+
+```
+============================================================
+  RELATÓRIO DE ANÁLISE DE ENGAJAMENTO
+  Perfis: @alanaanijar, @thomytalks, @psi.bianca, @despatologiza, ...
+  Total de posts analisados: 70
+============================================================
+
+0. VISÃO GERAL
+  Total de posts:           70
+  Likes médios:             5,875
+  Comentários médios:       87
+  Engajamento médio:        5,962
+  Taxa de engajamento:      7.4592%
+  Maior engajamento:        129,200 (issonaoeumaterapia)
+```
+
+---
+
+## 🔄 Pipeline Completo: Coleta + Análise
+
+Para executar o workflow completo de coleta e análise:
+
+```bash
+# 1. Navegar para o módulo no_login
+cd instagrapi/no_login
+
+# 2. Coletar dados (gera output/posts.csv)
+python collector.py
+
+# 3. Executar análise (gera relatórios e gráficos)
+python analysis.py
+```
+
+**Saiba o que esperar:**
+1. ✅ Coleta: 2-5 minutos (depende do número de perfis/posts)
+2. ✅ Análise: 30-60 segundos
+3. ✅ Arquivo de saída: `relatorio.txt` + 5 gráficos PNG
+4. ✅ Pasta: `output/analysis/`
+
+**Resultado Final:**
+```
+output/analysis/
+├── relatorio.txt                    # Análise textual detalhada
+├── 1_engajamento_por_perfil.png     # Comparação de perfis
+├── 2_distribuicao_engajamento.png   # Distribuição de dados
+├── 3_hashtags_vs_engajamento.png    # Impacto de hashtags
+├── 4_legenda_vs_engajamento.png     # Impacto da legenda
+└── 5_tipo_post_vs_engajamento.png   # Performance por tipo
+```
 
 ---
 
@@ -431,6 +560,38 @@ Solução: Execute firstlogin_manually.py
          Login novamente
 ```
 
+### "Analysis failed: CSV file not found"
+```
+Solução: Certifique-se de executar collector.py primeiro
+         Verifique se output/posts.csv foi criado
+         Confirme que o CSV tem dados
+```
+
+### "Matplotlib/Seaborn import error"
+```
+Solução: pip install matplotlib seaborn
+         Verifique se requirements.txt foi instalado
+```
+
+---
+
+## 📈 Insights Extraídos da Análise
+
+A análise fornece insights valiosos para otimização de conteúdo:
+
+### Principais Métricas Encontradas
+- **Taxa de Engajamento**: Varia significativamente entre perfis (0.05% a 41.79%)
+- **Tipo de Post**: Reels apresentam maior taxa de engajamento (12.10%) vs Imagens (2.97%)
+- **Hashtags**: Correlação não-linear - quantidade excessiva pode prejudicar engajamento
+- **Legenda**: Posts com legendas de tamanho médio tendem a ter melhor engajamento
+- **Outliers**: Alguns posts específicos geram engajamento 200x maior que a média
+
+### Uso Prático
+1. **Criadores de Conteúdo**: Otimizar trabalhos com base em dados dos melhores posts
+2. **Pesquisadores**: Entender padrões de engagement em diferentes nichos
+3. **Benchmarking**: Comparar performance contra concorrentes
+4. **Tendências**: Identificar formato de conteúdo mais efetivo
+
 ---
 
 ## Referências & Documentação
@@ -438,6 +599,9 @@ Solução: Execute firstlogin_manually.py
 - [Selenium Docs](https://selenium-python.readthedocs.io/)
 - [Instagrapi GitHub](https://github.com/adw0rd/instagrapi)
 - [Instaloader Docs](https://instaloader.github.io/)
+- [Pandas Documentation](https://pandas.pydata.org/docs/)
+- [Matplotlib Documentation](https://matplotlib.org/)
+- [Seaborn Documentation](https://seaborn.pydata.org/)
 - [Instagram Terms of Service](https://help.instagram.com/581066165581870)
 
 ---
