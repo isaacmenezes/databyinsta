@@ -1,9 +1,11 @@
 import csv
 import logging
 import os
-from dataclasses import dataclass
-from enum import Enum
+import re
 import sys
+from dataclasses import dataclass
+from datetime import datetime
+from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -29,41 +31,46 @@ if not IG_SESSION_ID:
     raise ValueError("IG_SESSION_ID não configurado no arquivo .env")
 
 
-class MediaType(Enum):
-    PHOTO = (1, "Foto")
-    VIDEO = (2, "Vídeo/Reel")
-    CAROUSEL = (8, "Carrossel")
-    UNKNOWN = (-1, "Desconhecido")
+WEEKDAYS = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"]
 
-    def __init__(self, code: int, label: str):
-        self.code = code
-        self.label = label
 
-    @classmethod
-    def from_code(cls, code: int) -> "MediaType":
-        for media_type in cls:
-            if media_type.code == code:
-                return media_type
-        return cls.UNKNOWN
+def resolve_post_type(media_type: int, product_type: str) -> str:
+    if media_type == 1:
+        return "Imagem"
+    if media_type == 8:
+        return "Carrossel"
+    if media_type == 2:
+        return "Reel" if product_type == "clips" else "Vídeo"
+    return "Desconhecido"
 
 
 @dataclass
 class PostData:
     position: int
     url: str
-    type: str
+    post_type: str
     likes: int
     comments: int
     views: Any
+    caption_length: int
+    hashtags_count: int
+    mentions_count: int
+    hour_posted: str
+    weekday: str
 
     def to_dict(self) -> Dict[str, Any]:
         return {
             "Seq": self.position,
             "URL": self.url,
-            "Tipo": self.type,
+            "Tipo": self.post_type,
             "Likes": self.likes,
             "Comentários": self.comments,
-            "Visualizações": self.views if self.views is not None else "N/A"
+            "Visualizações": self.views if self.views is not None else "N/A",
+            "Tamanho Legenda": self.caption_length,
+            "Hashtags": self.hashtags_count,
+            "Menções": self.mentions_count,
+            "Hora": self.hour_posted,
+            "Dia da Semana": self.weekday,
         }
 
 
@@ -102,19 +109,25 @@ def fetch_profile_posts(client: Client, username: str, post_limit: int = 10) -> 
 
         posts: List[PostData] = []
         for position, media in enumerate(medias, start=1):
-            media_type = MediaType.from_code(media.media_type)
-            views = getattr(media, "play_count", None) if media.media_type == 2 else None
+            caption = media.caption_text or ""
+            product_type = getattr(media, "product_type", "") or ""
+            taken_at: datetime = media.taken_at
 
             post_data = PostData(
                 position=position,
                 url=f"https://www.instagram.com/p/{media.code}/",
-                type=media_type.label,
+                post_type=resolve_post_type(media.media_type, product_type),
                 likes=media.like_count,
                 comments=media.comment_count,
-                views=views
+                views=getattr(media, "play_count", None) if media.media_type == 2 else None,
+                caption_length=len(caption),
+                hashtags_count=len(re.findall(r"#\w+", caption)),
+                mentions_count=len(re.findall(r"@\w+", caption)),
+                hour_posted=taken_at.strftime("%H:%M") if taken_at else "N/A",
+                weekday=WEEKDAYS[taken_at.weekday()] if taken_at else "N/A",
             )
             posts.append(post_data)
-            logger.debug(f"Post {position}: likes={post_data.likes}, comments={post_data.comments}, type={post_data.type}")
+            logger.debug(f"Post {position}: likes={post_data.likes}, type={post_data.post_type}")
 
         logger.info(f"✓ {len(posts)} posts coletados com sucesso")
         return ProfileData(username=user_info.username, followers=user_info.follower_count, posts=posts)
@@ -151,11 +164,16 @@ def display_profile_data(data: ProfileData) -> None:
     for post in data.posts:
         print(f"\n  Post #{post.position}")
         print(f"    URL: {post.url}")
-        print(f"    Tipo: {post.type}")
+        print(f"    Tipo: {post.post_type}")
         print(f"    Likes: {post.likes:,}")
         print(f"    Comentários: {post.comments:,}")
         if post.views is not None:
             print(f"    Visualizações: {post.views:,}")
+        print(f"    Tamanho Legenda: {post.caption_length}")
+        print(f"    Hashtags: {post.hashtags_count}")
+        print(f"    Menções: {post.mentions_count}")
+        print(f"    Hora: {post.hour_posted}")
+        print(f"    Dia da Semana: {post.weekday}")
 
     print("\n" + "=" * 50 + "\n")
 
