@@ -137,11 +137,17 @@ def fetch_profile_posts(client: Client, username: str, post_limit: int = 10) -> 
         return None
 
 
-def save_to_csv(data: ProfileData, output_dir: str = "output") -> str:
+def save_to_csv(profiles: List[ProfileData], output_dir: str = "output") -> str:
     Path(output_dir).mkdir(exist_ok=True)
-    filepath = Path(output_dir) / f"{data.username}_posts.csv"
+    filepath = Path(output_dir) / "posts.csv"
 
-    rows = [p.to_dict() for p in data.posts]
+    rows = []
+    for profile in profiles:
+        for post in profile.posts:
+            row = {"Perfil": profile.username, "Seguidores": profile.followers}
+            row.update(post.to_dict())
+            rows.append(row)
+
     if not rows:
         logger.warning("Nenhum post para salvar")
         return ""
@@ -194,17 +200,19 @@ def main() -> None:
             logger.warning("POST_LIMIT inválido, usando valor padrão de 10")
             post_limit = 10
 
-        logger.info(f"Perfis na fila: {target_profiles}")
-
+        all_profiles: List[ProfileData] = []
         for username in target_profiles:
             logger.info(f"--- Iniciando coleta: @{username} ---")
             profile_data = fetch_profile_posts(client, username, post_limit)
 
             if profile_data:
                 display_profile_data(profile_data)
-                save_to_csv(profile_data)
+                all_profiles.append(profile_data)
             else:
                 logger.error(f"Falha ao coletar @{username}, pulando...")
+
+        if all_profiles:
+            save_to_csv(all_profiles)
 
         logger.info("Todas as coletas concluídas")
 
