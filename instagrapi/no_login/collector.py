@@ -185,7 +185,8 @@ def main() -> None:
             logger.error("Impossível continuar sem autenticação")
             return
 
-        target_profile = os.getenv("TARGET_PROFILE", "neymarjr").strip()
+        raw_profiles = os.getenv("TARGET_PROFILES", os.getenv("TARGET_PROFILE", "neymarjr"))
+        target_profiles = [p.strip() for p in raw_profiles.split(",") if p.strip()]
 
         try:
             post_limit = int(os.getenv("POST_LIMIT", "10"))
@@ -193,14 +194,19 @@ def main() -> None:
             logger.warning("POST_LIMIT inválido, usando valor padrão de 10")
             post_limit = 10
 
-        profile_data = fetch_profile_posts(client, target_profile, post_limit)
+        logger.info(f"Perfis na fila: {target_profiles}")
 
-        if profile_data:
-            display_profile_data(profile_data)
-            save_to_csv(profile_data)
-            logger.info("Coleta concluída com sucesso")
-        else:
-            logger.error("Falha ao coletar dados do perfil")
+        for username in target_profiles:
+            logger.info(f"--- Iniciando coleta: @{username} ---")
+            profile_data = fetch_profile_posts(client, username, post_limit)
+
+            if profile_data:
+                display_profile_data(profile_data)
+                save_to_csv(profile_data)
+            else:
+                logger.error(f"Falha ao coletar @{username}, pulando...")
+
+        logger.info("Todas as coletas concluídas")
 
     except Exception as e:
         logger.critical(f"Erro fatal: {e}", exc_info=True)
