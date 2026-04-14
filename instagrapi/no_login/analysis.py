@@ -28,6 +28,11 @@ FIGSIZE = (10, 6)
 
 sns.set_theme(style="whitegrid", palette=PALETTE)
 
+
+# ============================================================================
+# CARREGAMENTO E PREPARO
+# ============================================================================
+
 def load_data(path: str) -> pd.DataFrame:
     df = pd.read_csv(path)
 
@@ -39,7 +44,9 @@ def load_data(path: str) -> pd.DataFrame:
     return df
 
 
-# media de engajamento por perfil (barplot) e taxa média de engajamento (%) por perfil (barplot)
+# ============================================================================
+# 1. MÉDIA DE ENGAJAMENTO POR PERFIL
+# ============================================================================
 
 def plot_avg_engagement(df: pd.DataFrame) -> None:
     summary = (
@@ -96,7 +103,9 @@ def plot_avg_engagement(df: pd.DataFrame) -> None:
     logger.info(f"✓ Salvo: {path}")
 
 
-# distribuição de engajamento (histograma) por perfil, para engajamento absoluto e taxa de engajamento (%)
+# ============================================================================
+# 2. DISTRIBUIÇÃO DE ENGAJAMENTO (HISTOGRAMA)
+# ============================================================================
 
 def plot_engagement_distribution(df: pd.DataFrame) -> None:
     fig, axes = plt.subplots(1, 2, figsize=(14, 6))
@@ -131,7 +140,9 @@ def plot_engagement_distribution(df: pd.DataFrame) -> None:
     logger.info(f"✓ Salvo: {path}")
 
 
-# hashtags vs engajamento absoluto (scatter) e taxa média (lineplot)
+# ============================================================================
+# 3. HASHTAGS VS ENGAJAMENTO
+# ============================================================================
 
 def plot_hashtags_vs_engagement(df: pd.DataFrame) -> None:
     fig, axes = plt.subplots(1, 2, figsize=(14, 6))
@@ -159,7 +170,9 @@ def plot_hashtags_vs_engagement(df: pd.DataFrame) -> None:
     logger.info(f"✓ Salvo: {path}")
 
 
-# tamanho da legenda (nº de caracteres) vs engajamento absoluto (scatter) e taxa média (barplot)
+# ============================================================================
+# 4. TAMANHO DA LEGENDA VS ENGAJAMENTO
+# ============================================================================
 
 def plot_caption_vs_engagement(df: pd.DataFrame) -> None:
     fig, axes = plt.subplots(1, 2, figsize=(14, 6))
@@ -190,7 +203,9 @@ def plot_caption_vs_engagement(df: pd.DataFrame) -> None:
     logger.info(f"✓ Salvo: {path}")
 
 
-# tipo de post vs engajamento absoluto (boxplot) e taxa média (barplot)
+# ============================================================================
+# 5. TIPO DE POST VS ENGAJAMENTO
+# ============================================================================
 
 def plot_post_type_vs_engagement(df: pd.DataFrame) -> None:
     fig, axes = plt.subplots(1, 2, figsize=(14, 6))
@@ -222,7 +237,103 @@ def plot_post_type_vs_engagement(df: pd.DataFrame) -> None:
     logger.info(f"✓ Salvo: {path}")
 
 
-# main
+
+# ============================================================================
+# RELATÓRIO EM TEXTO
+# ============================================================================
+
+def generate_text_report(df: pd.DataFrame) -> None:
+    lines = []
+
+    def section(title: str) -> None:
+        lines.append("\n" + "=" * 60)
+        lines.append(f"  {title}")
+        lines.append("=" * 60)
+
+    def row(label: str, value: str) -> None:
+        lines.append(f"  {label:<35} {value}")
+
+    lines.append("=" * 60)
+    lines.append("  RELATÓRIO DE ANÁLISE DE ENGAJAMENTO")
+    lines.append(f"  Perfis: {', '.join(f'@{p}' for p in df['Perfil'].unique())}")
+    lines.append(f"  Total de posts analisados: {len(df)}")
+    lines.append("=" * 60)
+
+    # 0. Geral
+    section("0. VISÃO GERAL (TODOS OS PERFIS)")
+    row("Total de posts:", f"{len(df)}")
+    row("Likes médios:", f"{df['Likes'].mean():,.0f}")
+    row("Comentários médios:", f"{df['Comentários'].mean():,.0f}")
+    row("Engajamento médio:", f"{df['Engajamento'].mean():,.0f}")
+    row("Taxa de engajamento média:", f"{df['Taxa de Engajamento (%)'].mean():.4f}%")
+    row("Mediana de engajamento:", f"{df['Engajamento'].median():,.0f}")
+    row("Maior engajamento:", f"{df['Engajamento'].max():,.0f}  ({df.loc[df['Engajamento'].idxmax(), 'Perfil']})")
+    row("Menor engajamento:", f"{df['Engajamento'].min():,.0f}  ({df.loc[df['Engajamento'].idxmin(), 'Perfil']})")
+    lines.append("")
+    tipo_mais_comum = df["Tipo"].value_counts().idxmax()
+    row("Tipo de post mais comum:", f"{tipo_mais_comum} ({df['Tipo'].value_counts()[tipo_mais_comum]} posts)")
+    row("Hashtags médias por post:", f"{df['Hashtags'].mean():.1f}")
+    row("Tamanho médio da legenda:", f"{df['Tamanho Legenda'].mean():.0f} caracteres")
+
+    # 1. Média por perfil
+    section("1. MÉDIA DE ENGAJAMENTO POR PERFIL")
+    for perfil, g in df.groupby("Perfil"):
+        lines.append(f"\n  @{perfil} ({g['Seguidores'].iloc[0]:,} seguidores | {len(g)} posts)")
+        row("Likes médios:", f"{g['Likes'].mean():,.0f}")
+        row("Comentários médios:", f"{g['Comentários'].mean():,.0f}")
+        row("Engajamento médio:", f"{g['Engajamento'].mean():,.0f}")
+        row("Taxa de engajamento média:", f"{g['Taxa de Engajamento (%)'].mean():.4f}%")
+        row("Post com mais engajamento:", f"{g.loc[g['Engajamento'].idxmax(), 'URL']}")
+        row("Post com menos engajamento:", f"{g.loc[g['Engajamento'].idxmin(), 'URL']}")
+
+    # 2. Distribuição
+    section("2. DISTRIBUIÇÃO DE ENGAJAMENTO")
+    for perfil, g in df.groupby("Perfil"):
+        lines.append(f"\n  @{perfil}")
+        row("Mínimo:", f"{g['Engajamento'].min():,.0f}")
+        row("Mediana:", f"{g['Engajamento'].median():,.0f}")
+        row("Máximo:", f"{g['Engajamento'].max():,.0f}")
+        row("Desvio padrão:", f"{g['Engajamento'].std():,.0f}")
+
+    # 3. Hashtags vs engajamento
+    section("3. HASHTAGS VS ENGAJAMENTO")
+    corr_ht = df["Hashtags"].corr(df["Taxa de Engajamento (%)"])
+    row("Correlação hashtags x taxa (%):", f"{corr_ht:.4f}")
+    lines.append("")
+    avg_ht = df.groupby("Hashtags")["Taxa de Engajamento (%)"].mean().sort_values(ascending=False)
+    lines.append("  Taxa média por nº de hashtags (top 5):")
+    for n_ht, taxa in avg_ht.head(5).items():
+        lines.append(f"    {n_ht} hashtag(s) → {taxa:.4f}%")
+
+    # 4. Legenda vs engajamento
+    section("4. TAMANHO DA LEGENDA VS ENGAJAMENTO")
+    corr_cap = df["Tamanho Legenda"].corr(df["Taxa de Engajamento (%)"])
+    row("Correlação legenda x taxa (%):", f"{corr_cap:.4f}")
+    lines.append("")
+    bins = pd.cut(df["Tamanho Legenda"], bins=5)
+    avg_cap = df.groupby(bins, observed=True)["Taxa de Engajamento (%)"].mean()
+    lines.append("  Taxa média por faixa de tamanho:")
+    for faixa, taxa in avg_cap.items():
+        lines.append(f"    {str(faixa):<25} → {taxa:.4f}%")
+
+    # 5. Tipo de post vs engajamento
+    section("5. TIPO DE POST VS ENGAJAMENTO")
+    avg_tipo = df.groupby("Tipo")["Taxa de Engajamento (%)"].mean().sort_values(ascending=False)
+    lines.append("")
+    for tipo, taxa in avg_tipo.items():
+        count = len(df[df["Tipo"] == tipo])
+        lines.append(f"  {tipo:<15} → {taxa:.4f}%  ({count} posts)")
+
+    lines.append("\n" + "=" * 60 + "\n")
+
+    report = "\n".join(lines)
+    print(report)
+
+    path = OUTPUT_DIR / "relatorio.txt"
+    path.write_text(report, encoding="utf-8")
+    logger.info(f"✓ Relatório salvo em: {path}")
+
+
 
 def main() -> None:
     if not Path(CSV_PATH).exists():
@@ -236,8 +347,9 @@ def main() -> None:
     plot_hashtags_vs_engagement(df)
     plot_caption_vs_engagement(df)
     plot_post_type_vs_engagement(df)
+    generate_text_report(df)
 
-    logger.info(f"✓ Análise concluída. Gráficos salvos em '{OUTPUT_DIR}'")
+    logger.info(f"✓ Análise concluída. Resultados salvos em '{OUTPUT_DIR}'")
 
 
 if __name__ == "__main__":
